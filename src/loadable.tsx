@@ -5,13 +5,20 @@
 import { Component, ComponentType } from 'react';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type LoadableComponentFunction<P = Record<string, any>> = () => Promise<
+export type LoadComponentFn<P = Record<string, any>> = () => Promise<
   ComponentType<P>
 >;
 
+export type LoadableMixin = {
+  preload(): void;
+};
+
+export type LoadableComponent<P = Record<string, any>> = ComponentType<P> &
+  LoadableMixin;
+
 const DefaultLoader: ComponentType = () => null;
 
-interface LoadableConfig {
+export interface LoadableConfig {
   loader?: ComponentType<any>;
   /**
    * Component which renders with the lazy component
@@ -32,7 +39,7 @@ type LoadingState = {
 
 const loadingStates = new WeakMap<Function, LoadingState>();
 
-const getOrCreateLoadingState = (loadFn: Function) => {
+const getLoadingState = (loadFn: Function, modify?: Partial<LoadingState>) => {
   if (!loadingStates.has(loadFn)) {
     loadingStates.set(loadFn, {
       error: null,
@@ -40,27 +47,25 @@ const getOrCreateLoadingState = (loadFn: Function) => {
     });
   }
 
-  return loadingStates.get(loadFn)!;
-};
+  const loadingState = loadingStates.get(loadFn)!;
 
-const updateLoadingState = (
-  loadFn: Function,
-  update: Partial<LoadingState>,
-) => {
-  const loadingState = getOrCreateLoadingState(loadFn);
-  const updatedState = { ...loadingState, ...update };
+  if (modify == null) {
+    return loadingState;
+  }
+
+  const updatedState = { ...loadingState, ...modify };
   loadingStates.set(loadFn, updatedState);
   return updatedState;
 };
 
 const load = (loadFn: Function) => {
-  const state = getOrCreateLoadingState(loadFn);
+  const state = getLoadingState(loadFn);
 
   if (state.result) {
     return state;
   }
 
-  updateLoadingState(loadFn, { loading: true, error: null });
+  getLoadingState(loadFn, { loading: true, error: null });
 
   state.loading = true;
   state.error = null;
@@ -68,17 +73,17 @@ const load = (loadFn: Function) => {
     .then((result: any) => {
       state.loading = false;
       state.result = result;
-      updateLoadingState(loadFn, state);
+      getLoadingState(loadFn, state);
       return result;
     })
     .catch((error: any) => {
       state.loading = false;
       state.error = error;
-      updateLoadingState(loadFn, state);
+      getLoadingState(loadFn, state);
       throw error;
     });
 
-  updateLoadingState(loadFn, state);
+  getLoadingState(loadFn, state);
 
   return state;
 };
@@ -86,50 +91,37 @@ const load = (loadFn: Function) => {
 abstract class LoadableComponentBase<P> extends Component<P, LoadingState> {
   constructor(
     private config: LoadableFullConfig,
-    initialState: LoadingState,
     props: P,
   ) {
     super(props);
 
-    this.state = initialState;
+    this.state = getLoadingState(config.loadFn);
   }
 
-  static loadFn: LoadableComponentFunction<any> = undefined as any;
+  static loadFn: LoadComponentFn<any> = undefined as any;
 
   static preload() {
     load(this.loadFn);
   }
 
   UNSAFE_componentWillMount() {
-    this.loadModule();
-  }
-
-  private loadModule() {
     if (!this.state.loading) {
       return;
     }
 
     const { promise } = load(this.config.loadFn);
 
-    this.syncLoadingState();
+    this.setState(getLoadingState(this.config.loadFn));
 
     promise!
       .then(() => {
-        this.syncLoadingState();
+        this.setState(getLoadingState(this.config.loadFn));
         return null;
       })
       .catch(() => {
-        this.syncLoadingState();
+        this.setState(getLoadingState(this.config.loadFn));
         return null;
       });
-  }
-
-  syncLoadingState() {
-    this.setState(getOrCreateLoadingState(this.config.loadFn));
-  }
-
-  updateLoadingState(update: Partial<LoadingState>) {
-    this.setState(updateLoadingState(this.config.loadFn, update));
   }
 
   render() {
@@ -153,11 +145,12 @@ abstract class LoadableComponentBase<P> extends Component<P, LoadingState> {
   }
 }
 
-/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+type LoadableComponent$<P> = LoadableComponent<P>;
+
 export function loadable<P = any>(
-  loadFn: LoadableComponentFunction<P>,
+  loadFn: LoadComponentFn<P>,
   loaderOrConfig?: null | undefined | LoadableConfig['loader'] | LoadableConfig,
-): ComponentType<P> {
+): LoadableComponent$<P> {
   const config =
     typeof loaderOrConfig === 'object'
       ? loaderOrConfig
@@ -172,7 +165,6 @@ export function loadable<P = any>(
           loadFn,
           ...config,
         },
-        getOrCreateLoadingState(loadFn),
         props,
       );
     }
