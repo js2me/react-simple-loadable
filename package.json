@@ -20,22 +20,20 @@
     "react",
     "simple",
     "loadable",
-    "suspense"
+    "suspense",
+    "lazy"
   ],
   "author": "js2me",
   "license": "MIT",
   "type": "module",
-  "dependencies": {
-    "yammies": "^2.0.10"
-  },
   "peerDependencies": {
-    "react": "<19"
+    "react": "^18.3.1"
   },
   "devDependencies": {
-    "@types/react": "<19",
-    "eslint": "8.57.1",
-    "js2me-exports-post-build-script": "2.0.14",
-    "js2me-eslint-config": "1.0.4",
-    "typescript": "5.6.2"
+    "@types/react": "^18.3.18",
+    "eslint": "^8.57.1",
+    "js2me-eslint-config": "^1.0.6",
+    "js2me-exports-post-build-script": "^2.0.17",
+    "typescript": "^5.7.2"
   }
 }

@@ -8,6 +8,8 @@ module.exports = {
     },
   },
   rules: {
-    'unicorn/prevent-abbreviations': 'off'
+    'unicorn/prevent-abbreviations': 'off',
+    'sonarjs/no-unsafe': 'off',
+    'sonarjs/public-static-readonly': 'off'
   }
 };

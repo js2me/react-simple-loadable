@@ -1,10 +1,5 @@
-/* eslint-disable sonarjs/sonar-no-unused-class-component-methods */
-/* eslint-disable sonarjs/no-unsafe */
-/* eslint-disable sonarjs/public-static-readonly */
-/* eslint-disable @typescript-eslint/ban-types */
 import { Component, ComponentType } from 'react';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type LoadComponentFn<P = Record<string, any>> = () => Promise<
   ComponentType<P>
 >;
@@ -37,9 +32,12 @@ type LoadingState = {
   promise?: Promise<any>;
 };
 
-const loadingStates = new WeakMap<Function, LoadingState>();
+const loadingStates = new WeakMap<LoadComponentFn<any>, LoadingState>();
 
-const getLoadingState = (loadFn: Function, modify?: Partial<LoadingState>) => {
+const getLoadingState = (
+  loadFn: LoadComponentFn<any>,
+  modify?: Partial<LoadingState>,
+) => {
   if (!loadingStates.has(loadFn)) {
     loadingStates.set(loadFn, {
       error: null,
@@ -58,7 +56,7 @@ const getLoadingState = (loadFn: Function, modify?: Partial<LoadingState>) => {
   return updatedState;
 };
 
-const load = (loadFn: Function) => {
+const load = (loadFn: LoadComponentFn<any>) => {
   const state = getLoadingState(loadFn);
 
   if (state.result) {
