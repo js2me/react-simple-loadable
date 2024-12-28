@@ -7,5 +7,7 @@ module.exports = {
       },
     },
   },
-  rules: {}
+  rules: {
+    'unicorn/prevent-abbreviations': 'off'
+  }
 };

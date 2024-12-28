@@ -1,6 +1,6 @@
 # React Simple Loadable HOC
 
-This is simple ErrorBoundary component    
+This is simple loadable component based on Class React Component  
 
 ## Usage  
 
@@ -12,4 +12,15 @@ loadable(async () => {
 }, 
   SkeletonComponent
 )
+```
+
+```tsx
+import { loadable } from "react-simple-loadable";
+
+loadable(async () => {
+  return (await import('./your-component')).YourNamedComponent
+},{
+  loader: SkeletonComponent,
+  extra: () => <div>renders with the lazy component</div>
+})
 ```
