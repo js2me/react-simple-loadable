@@ -137,7 +137,7 @@ abstract class LoadableComponentBase<P> extends Component<P, LoadingState> {
     const Loader = loader || DefaultLoader;
 
     if (this.state.loading || this.state.error) {
-      return <Loader />;
+      return <Loader {...this.props} />;
     } else if (this.state.result) {
       const Component = this.state.result;
       const Extra = this.config.extra;
