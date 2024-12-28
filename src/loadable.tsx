@@ -155,7 +155,7 @@ export function loadable<P = any>(
       : { loader: loaderOrConfig };
 
   class LoadableComponent extends LoadableComponentBase<P> {
-    loadFn = loadFn;
+    static loadFn = loadFn;
 
     constructor(props: P) {
       super(
