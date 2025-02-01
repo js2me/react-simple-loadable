@@ -111,20 +111,16 @@ abstract class LoadableComponentBase<P> extends Component<P, LoadingState> {
 
     this.setState(getLoadingState(this.config.loadFn));
 
-    promise!
-      .then(() => {
-        this.setState(getLoadingState(this.config.loadFn));
-        return null;
-      })
-      .catch(() => {
-        this.setState(getLoadingState(this.config.loadFn));
-        return null;
-      });
+    promise!.finally(() => {
+      this.setState(getLoadingState(this.config.loadFn));
+    });
   }
 
   render() {
     const { loader } = this.config;
     const Loader = loader || DefaultLoader;
+
+    console.info('loadable render', this.state, this.props, this.config);
 
     if (this.state.loading || this.state.error) {
       return <Loader {...this.props} />;
