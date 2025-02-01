@@ -120,8 +120,6 @@ abstract class LoadableComponentBase<P> extends Component<P, LoadingState> {
     const { loader } = this.config;
     const Loader = loader || DefaultLoader;
 
-    console.info('loadable render', this.state, this.props, this.config);
-
     if (this.state.loading || this.state.error) {
       return <Loader {...this.props} />;
     } else if (this.state.result) {
