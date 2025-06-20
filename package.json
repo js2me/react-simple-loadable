@@ -27,7 +27,7 @@
   "license": "MIT",
   "type": "module",
   "peerDependencies": {
-    "react": "^18.3.1"
+    "react": "^17.0.0 || ^18.0.0 || ^19.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.18",
