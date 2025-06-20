@@ -13,8 +13,16 @@ export type LoadableComponent<P = Record<string, any>> = ComponentType<P> &
 
 const DefaultLoader: ComponentType = () => null;
 
+export interface LoaderComponentProps {
+  error?: any;
+  isLoading?: boolean;
+}
+
+export type LoaderComponent = ComponentType<LoaderComponentProps>;
+
 export interface LoadableConfig {
-  loader?: ComponentType<any>;
+  throwOnError?: boolean;
+  loader?: LoaderComponent;
   /**
    * Component which renders with the lazy component
    */
@@ -117,11 +125,25 @@ abstract class LoadableComponentBase<P> extends Component<P, LoadingState> {
   }
 
   render() {
-    const { loader } = this.config;
+    const { loader, throwOnError } = this.config;
     const Loader = loader || DefaultLoader;
 
+    if (throwOnError && this.state.error) {
+      throw this.state.error;
+    }
+
     if (this.state.loading || this.state.error) {
-      return <Loader {...this.props} />;
+      const loaderProps = {
+        ...this.props,
+      } as any;
+
+      if (this.state.error) {
+        loaderProps.error = this.state.error;
+      } else if (!loaderProps.isLoading) {
+        loaderProps.isLoading = true;
+      }
+
+      return <Loader {...loaderProps} />;
     } else if (this.state.result) {
       const Component = this.state.result;
       const Extra = this.config.extra;
@@ -139,14 +161,18 @@ abstract class LoadableComponentBase<P> extends Component<P, LoadingState> {
 
 type LoadableComponent$<P> = LoadableComponent<P>;
 
+export const loadableDefaultConfig: Partial<LoadableConfig> = {
+  throwOnError: false,
+};
+
 export function loadable<P = any>(
   loadFn: LoadComponentFn<P>,
   loaderOrConfig?: null | undefined | LoadableConfig['loader'] | LoadableConfig,
 ): LoadableComponent$<P> {
   const config =
     typeof loaderOrConfig === 'object'
-      ? loaderOrConfig
-      : { loader: loaderOrConfig };
+      ? { ...loadableDefaultConfig, ...loaderOrConfig }
+      : { ...loadableDefaultConfig, loader: loaderOrConfig };
 
   class LoadableComponent extends LoadableComponentBase<P> {
     static loadFn = loadFn;
