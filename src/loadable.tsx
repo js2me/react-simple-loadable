@@ -35,12 +35,8 @@ export interface LoadableConfig {
   extra?: ComponentType<any>;
 }
 
-// export interface LoadableConfigWithLoad<P = any> extends LoadableConfig {
-//   load: LoadComponentFn<P>
-// }
-
-interface LoadableFullConfig extends LoadableConfig {
-  loadFn: () => Promise<any>;
+export interface LoadableConfigWithLoad<P = any> extends LoadableConfig {
+  load: LoadComponentFn<P>;
 }
 
 type LoadingState = {
@@ -106,12 +102,12 @@ const load = (loadFn: LoadComponentFn<any>) => {
 
 abstract class LoadableComponentBase<P> extends Component<P, LoadingState> {
   constructor(
-    private config: LoadableFullConfig,
+    private config: LoadableConfigWithLoad,
     props: P,
   ) {
     super(props);
 
-    this.state = getLoadingState(config.loadFn);
+    this.state = getLoadingState(config.load);
   }
 
   static loadFn: LoadComponentFn<any> = undefined as any;
@@ -125,12 +121,12 @@ abstract class LoadableComponentBase<P> extends Component<P, LoadingState> {
       return;
     }
 
-    const { promise } = load(this.config.loadFn);
+    const { promise } = load(this.config.load);
 
-    this.setState(getLoadingState(this.config.loadFn));
+    this.setState(getLoadingState(this.config.load));
 
     promise!.finally(() => {
-      this.setState(getLoadingState(this.config.loadFn));
+      this.setState(getLoadingState(this.config.load));
     });
   }
 
@@ -176,29 +172,38 @@ export const loadableDefaultConfig: Partial<LoadableConfig> = {
 };
 
 export function loadable<P = any>(
-  loadFn: LoadComponentFn<P>,
+  config: LoadableConfigWithLoad<P>,
+): LoadableComponent$<P>;
+export function loadable<P = any>(
+  load: LoadComponentFn<P>,
   loadingOrConfig?:
     | null
     | undefined
     | LoadableConfig['loading']
     | LoadableConfig,
-): LoadableComponent$<P> {
-  const config =
-    typeof loadingOrConfig === 'object'
-      ? { ...loadableDefaultConfig, ...loadingOrConfig }
-      : { ...loadableDefaultConfig, loading: loadingOrConfig };
+): LoadableComponent$<P>;
 
-  class LoadableComponent extends LoadableComponentBase<P> {
-    static loadFn = loadFn;
+export function loadable(...args: any[]): LoadableComponent$<any> {
+  const config = {
+    ...loadableDefaultConfig,
+  } as LoadableConfigWithLoad;
 
-    constructor(props: P) {
-      super(
-        {
-          loadFn,
-          ...config,
-        },
-        props,
-      );
+  if (args.length === 1) {
+    Object.assign(config, args[0]);
+  } else {
+    config.load = args[0];
+    if (typeof args[1] === 'function') {
+      config.loading = args[1];
+    } else {
+      Object.assign(config, args[1] || {});
+    }
+  }
+
+  class LoadableComponent extends LoadableComponentBase<any> {
+    static loadFn = config.load;
+
+    constructor(props: any) {
+      super(config, props);
     }
   }
 
