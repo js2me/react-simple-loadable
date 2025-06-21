@@ -1,4 +1,4 @@
-import { Component, ComponentType } from 'react';
+import { Component, ComponentType, ReactNode } from 'react';
 
 export type LoadComponentFn<P = Record<string, any>> = () => Promise<
   ComponentType<P>
@@ -8,7 +8,9 @@ export type LoadableMixin = {
   preload(): void;
 };
 
-export type LoadableComponent<P = Record<string, any>> = ComponentType<P> &
+export type LoadableComponent<P = Record<string, any>> = ((
+  props: P,
+) => ReactNode) &
   LoadableMixin;
 
 const DefaultLoader: ComponentType = () => null;
