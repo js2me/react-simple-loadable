@@ -15,12 +15,12 @@ export type LoadableComponent<P = Record<string, any>> = ((
 
 const DefaultLoadingComponent: ComponentType = () => null;
 
-export interface LoaderComponentProps {
+export interface LoadingComponentProps {
   error?: any;
   isLoading?: boolean;
 }
 
-export type LoadingComponent = ComponentType<LoaderComponentProps>;
+export type LoadingComponent = ComponentType<LoadingComponentProps>;
 
 export interface LoadableConfig {
   throwOnError?: boolean;
