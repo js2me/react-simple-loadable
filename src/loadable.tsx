@@ -13,23 +13,31 @@ export type LoadableComponent<P = Record<string, any>> = ((
 ) => ReactNode) &
   LoadableMixin;
 
-const DefaultLoader: ComponentType = () => null;
+const DefaultLoadingComponent: ComponentType = () => null;
 
 export interface LoaderComponentProps {
   error?: any;
   isLoading?: boolean;
 }
 
-export type LoaderComponent = ComponentType<LoaderComponentProps>;
+export type LoadingComponent = ComponentType<LoaderComponentProps>;
 
 export interface LoadableConfig {
   throwOnError?: boolean;
-  loader?: LoaderComponent;
+  loading?: LoadingComponent | ComponentType<Record<string, any>>;
+  /**
+   * @deprecated use {loading}
+   */
+  loader?: LoadingComponent | ComponentType<Record<string, any>>;
   /**
    * Component which renders with the lazy component
    */
   extra?: ComponentType<any>;
 }
+
+// export interface LoadableConfigWithLoad<P = any> extends LoadableConfig {
+//   load: LoadComponentFn<P>
+// }
 
 interface LoadableFullConfig extends LoadableConfig {
   loadFn: () => Promise<any>;
@@ -127,8 +135,8 @@ abstract class LoadableComponentBase<P> extends Component<P, LoadingState> {
   }
 
   render() {
-    const { loader, throwOnError } = this.config;
-    const Loader = loader || DefaultLoader;
+    const { loading, loader, throwOnError } = this.config;
+    const Loader = loading || loader || DefaultLoadingComponent;
 
     if (throwOnError && this.state.error) {
       throw this.state.error;
@@ -169,12 +177,16 @@ export const loadableDefaultConfig: Partial<LoadableConfig> = {
 
 export function loadable<P = any>(
   loadFn: LoadComponentFn<P>,
-  loaderOrConfig?: null | undefined | LoadableConfig['loader'] | LoadableConfig,
+  loadingOrConfig?:
+    | null
+    | undefined
+    | LoadableConfig['loading']
+    | LoadableConfig,
 ): LoadableComponent$<P> {
   const config =
-    typeof loaderOrConfig === 'object'
-      ? { ...loadableDefaultConfig, ...loaderOrConfig }
-      : { ...loadableDefaultConfig, loader: loaderOrConfig };
+    typeof loadingOrConfig === 'object'
+      ? { ...loadableDefaultConfig, ...loadingOrConfig }
+      : { ...loadableDefaultConfig, loading: loadingOrConfig };
 
   class LoadableComponent extends LoadableComponentBase<P> {
     static loadFn = loadFn;

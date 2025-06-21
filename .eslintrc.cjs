@@ -10,6 +10,8 @@ module.exports = {
   rules: {
     'unicorn/prevent-abbreviations': 'off',
     'sonarjs/no-unsafe': 'off',
-    'sonarjs/public-static-readonly': 'off'
+    'sonarjs/public-static-readonly': 'off',
+    'sonarjs/deprecation': 'off',
+    'sonarjs/no-commented-code': 'off'
   }
 };
