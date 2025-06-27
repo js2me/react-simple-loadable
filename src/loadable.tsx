@@ -24,6 +24,7 @@ export type LoadingComponent = ComponentType<LoadingComponentProps>;
 
 export interface LoadableConfig {
   throwOnError?: boolean;
+  preload?: boolean;
   loading?: LoadingComponent | ComponentType<Record<string, any>>;
   /**
    * @deprecated use {loading}
@@ -205,6 +206,10 @@ export function loadable(...args: any[]): LoadableComponent$<any> {
     constructor(props: any) {
       super(config, props);
     }
+  }
+
+  if (config.preload) {
+    LoadableComponent.preload();
   }
 
   return LoadableComponent as any;
