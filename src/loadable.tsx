@@ -193,9 +193,9 @@ export function loadable(...args: any[]): LoadableComponent$<any> {
     Object.assign(
       config,
       typeof args[0] === 'function'
-        ? {
-            loading: args[0],
-          }
+        ? ({
+            load: args[0],
+          } satisfies Partial<LoadableConfigWithLoad>)
         : args[0],
     );
   } else {
