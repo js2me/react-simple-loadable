@@ -190,7 +190,14 @@ export function loadable(...args: any[]): LoadableComponent$<any> {
   } as LoadableConfigWithLoad;
 
   if (args.length === 1) {
-    Object.assign(config, args[0]);
+    Object.assign(
+      config,
+      typeof args[0] === 'function'
+        ? {
+            loading: args[0],
+          }
+        : args[0],
+    );
   } else {
     config.load = args[0];
     if (typeof args[1] === 'function') {
