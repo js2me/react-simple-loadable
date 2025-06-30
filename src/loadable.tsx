@@ -23,7 +23,15 @@ export interface LoadingComponentProps {
 export type LoadingComponent = ComponentType<LoadingComponentProps>;
 
 export interface LoadableConfig {
+  /**
+   * Whether or not to throw the error when it happens.
+   * If not, the error will be passed as a prop to the loading component.
+   * Default is `false`.
+   */
   throwOnError?: boolean;
+  /**
+   * Starts load this component when it is not even rendered inside React tree
+   */
   preload?: boolean;
   loading?: LoadingComponent | ComponentType<Record<string, any>>;
   /**
