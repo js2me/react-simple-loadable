@@ -33,6 +33,10 @@ export interface LoadableConfig {
    * Starts load this component when it is not even rendered inside React tree
    */
   preload?: boolean;
+  /**
+   * This component is rendered while the real component is being loaded,
+   * It will also be rendered if `throwOnError = false` and an error occurred during execution
+   */
   loading?: LoadingComponent | ComponentType<Record<string, any>>;
   /**
    * @deprecated use {loading}
